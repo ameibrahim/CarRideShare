@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+    nextjs:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        ports:
+            - "5555:5555"
+        environment:
+            - NODE_ENV=production
+            - DATABASE_URL=mysql://root:secret@mysql:3306/carrideshare
+        depends_on:
+            - mysql
+
+    mysql:
+        image: mysql:8.0
+        command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        ports:
+            - "5556:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+volumes:
+    mysql_data:

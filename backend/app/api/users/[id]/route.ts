@@ -6,9 +6,11 @@ const prisma = new PrismaClient();
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const user = await prisma.user.findUnique({ where: { id: params.id } });
+    const { id } = await params;
+
+    const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -17,12 +19,14 @@ export async function GET(
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
     const body = await request.json();
     try {
         const updatedUser = await prisma.user.update({
-            where: { id: params.id },
+            where: { id },
             data: body, // allow partial updates; validate as needed
         });
         return NextResponse.json(updatedUser);
@@ -38,13 +42,14 @@ export async function PUT(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     try {
-        await prisma.user.delete({ where: { id: params.id } });
+        await prisma.user.delete({ where: { id } });
         return NextResponse.json({ message: "User deleted" });
     } catch (error) {
-        console.log("error: ", error)
+        console.log("error: ", error);
 
         return NextResponse.json(
             { error: "Failed to delete user" },

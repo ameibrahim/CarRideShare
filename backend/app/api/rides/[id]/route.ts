@@ -6,9 +6,11 @@ const prisma = new PrismaClient();
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const ride = await prisma.ride.findUnique({ where: { id: params.id } });
+    const { id } = await params;
+
+    const ride = await prisma.ride.findUnique({ where: { id } });
     if (!ride) {
         return NextResponse.json({ error: "Ride not found" }, { status: 404 });
     }
@@ -17,12 +19,13 @@ export async function GET(
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     const body = await request.json();
     try {
         const updatedRide = await prisma.ride.update({
-            where: { id: params.id },
+            where: { id },
             data: body,
         });
         return NextResponse.json(updatedRide);
@@ -38,10 +41,11 @@ export async function PUT(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     try {
-        await prisma.ride.delete({ where: { id: params.id } });
+        await prisma.ride.delete({ where: { id } });
         return NextResponse.json({ message: "Ride deleted" });
     } catch (error) {
         console.log("error: ", error);

@@ -6,10 +6,12 @@ const prisma = new PrismaClient();
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
     const booking = await prisma.booking.findUnique({
-        where: { id: params.id },
+        where: { id },
     });
     if (!booking) {
         return NextResponse.json(
@@ -22,12 +24,14 @@ export async function GET(
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
     const body = await request.json();
     try {
         const updatedBooking = await prisma.booking.update({
-            where: { id: params.id },
+            where: { id },
             data: body,
         });
         return NextResponse.json(updatedBooking);
@@ -42,10 +46,11 @@ export async function PUT(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     try {
-        await prisma.booking.delete({ where: { id: params.id } });
+        await prisma.booking.delete({ where: { id } });
         return NextResponse.json({ message: "Booking deleted" });
     } catch (error) {
         console.log("error: ", error);

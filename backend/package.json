@@ -2,10 +2,11 @@
   "name": "backend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "PORT=5555 next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "PORT=5555 next start",
     "lint": "next lint"
   },
   "dependencies": {

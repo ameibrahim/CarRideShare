@@ -6,9 +6,10 @@ const prisma = new PrismaClient();
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const faq = await prisma.fAQ.findUnique({ where: { id: params.id } });
+    const { id } = await params;
+    const faq = await prisma.fAQ.findUnique({ where: { id } });
     if (!faq) {
         return NextResponse.json({ error: "FAQ not found" }, { status: 404 });
     }
@@ -17,12 +18,13 @@ export async function GET(
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     const body = await request.json();
     try {
         const updatedFaq = await prisma.fAQ.update({
-            where: { id: params.id },
+            where: { id },
             data: body,
         });
         return NextResponse.json(updatedFaq);
@@ -37,11 +39,12 @@ export async function PUT(
 }
 
 export async function DELETE(
-    _request: Request,
-    { params }: { params: { id: string } }
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     try {
-        await prisma.fAQ.delete({ where: { id: params.id } });
+        await prisma.fAQ.delete({ where: { id } });
         return NextResponse.json({ message: "FAQ deleted" });
     } catch (error) {
         console.log("error: ", error);
