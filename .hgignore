@@ -1,0 +1,62 @@
+syntax: glob
+
+# FOR BACKEND 
+# dependencies
+/node_modules
+/backend/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+
+# Note: Mercurial’s .hgignore does not support negation (!), so files in .yarn/patches,
+# .yarn/plugins, .yarn/releases, and .yarn/versions will be ignored unless explicitly added.
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (if you want to commit a specific .env file, you'll need to add it explicitly)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# FOR APP
+
+# Android Studio / IntelliJ files
+*.iml
+.idea/
+
+# Gradle build and cache files
+.gradle/
+build/
+app/build/
+
+# Local configuration file (contains local paths and SDK settings)
+local.properties
+
+# Log files
+*.log
+
+# Other generated files and caches
+captures/
