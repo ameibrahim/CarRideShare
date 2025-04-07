@@ -33,6 +33,7 @@ import retrofit2.Response
 
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.font.FontWeight
+import com.google.gson.Gson
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -121,9 +122,15 @@ fun LoginScreen(navController: NavController) {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
 
+                                // Save full user data as JSON
                                 val sharedPref = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
-                                sharedPref.edit().putBoolean("isLoggedIn", true).apply()
-                                // Optionally save more user data from response.body() as needed
+                                val gson = Gson()
+                                val userDataJson = gson.toJson(response.body())
+                                sharedPref.edit().apply {
+                                    putBoolean("isLoggedIn", true)
+                                    putString("userData", userDataJson)
+                                    apply()
+                                }
 
                                 // Navigate to the home screen (or whichever screen you prefer)
                                 navController.navigate("dashboard")

@@ -49,6 +49,7 @@ fun AppNavigator() {
         composable("loginscreen") { LoginScreen(navController) }
         composable("signupscreen") { SignupScreen(navController) }
         composable("dashboard") { Dashboard(navController) }
+        composable("settings") { SettingsScreen(navController) }
     }
 }
 
