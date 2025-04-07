@@ -126,7 +126,7 @@ fun LoginScreen(navController: NavController) {
                                 // Optionally save more user data from response.body() as needed
 
                                 // Navigate to the home screen (or whichever screen you prefer)
-                                navController.navigate("home")
+                                navController.navigate("dashboard")
                             }
                         } else {
                             withContext(Dispatchers.Main) {

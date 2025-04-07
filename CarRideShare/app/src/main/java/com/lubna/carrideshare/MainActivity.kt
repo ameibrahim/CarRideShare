@@ -1,5 +1,6 @@
 package com.lubna.carrideshare
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,9 +24,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,6 +63,21 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun LandingScreen(navController: NavController) {
+
+    val context = LocalContext.current
+
+    // Check login state when the LandingScreen is first composed
+    LaunchedEffect(Unit) {
+        val sharedPref = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+        if (sharedPref.getBoolean("isLoggedIn", false)) {
+            // Navigate directly to the dashboard if already logged in.
+            navController.navigate("dashboard") {
+                // Clear the backstack so the user can't navigate back to landing.
+                popUpTo("landing") { inclusive = true }
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         YellowBackground()
         Column(
