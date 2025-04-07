@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.Packaging
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -37,6 +39,14 @@ android {
     buildFeatures {
         compose = true
     }
+
+    packaging {
+        resources.excludes.add("META-INF/DEPENDENCIES")
+        resources.pickFirsts.add("META-INF/INDEX.LIST")
+        resources.pickFirsts.add("META-INF/io.netty.versions.properties")
+    }
+
+
 }
 
 dependencies {
@@ -51,6 +61,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.espresso.core)
+    implementation(libs.firebase.appdistribution.gradle)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -58,4 +69,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.retrofit)
+    implementation(libs.gson.converter)
+    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.coroutines.android)
 }

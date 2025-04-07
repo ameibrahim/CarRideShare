@@ -38,12 +38,14 @@ import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun AppNavigator() {
+
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "landing") {
         composable("landing") { LandingScreen(navController) }
         composable("loginscreen") { LoginScreen(navController) }
-//        composable("connection") { ConnectionScreen(navController) }
+        composable("signupscreen") { SignupScreen(navController) }
+        composable("dashboard") { Dashboard(navController) }
     }
 }
 
