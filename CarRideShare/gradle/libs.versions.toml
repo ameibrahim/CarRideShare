@@ -32,6 +32,10 @@ gson-converter = "com.squareup.retrofit2:converter-gson:2.9.0"
 okhttp-logging-interceptor = "com.squareup.okhttp3:logging-interceptor:4.9.0"
 coroutines-android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
 firebase-appdistribution-gradle = { group = "com.google.firebase", name = "firebase-appdistribution-gradle", version.ref = "firebaseAppdistributionGradle" }
+osmdroid = 'org.osmdroid:osmdroid-android:6.1.10'
+mapbox = 'com.mapbox.maps:android:11.11.0'
+okhttp = 'com.squareup.okhttp3:okhttp:4.9.3'
+json = 'org.json:json:20210307'
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

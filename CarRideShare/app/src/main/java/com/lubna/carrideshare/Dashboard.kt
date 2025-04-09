@@ -37,6 +37,12 @@ fun Dashboard(navController: NavController) {
         )
 
         Button(onClick = {
+            navController.navigate("newrideshare")
+        }){
+            Text("New Ride Share")
+        }
+
+        Button(onClick = {
             navController.navigate("settings")
         }){
             Image(

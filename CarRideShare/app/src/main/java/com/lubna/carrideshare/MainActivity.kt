@@ -50,6 +50,7 @@ fun AppNavigator() {
         composable("signupscreen") { SignupScreen(navController) }
         composable("dashboard") { Dashboard(navController) }
         composable("settings") { SettingsScreen(navController) }
+        composable("newrideshare") { NewRideShareScreen(navController) }
     }
 }
 
