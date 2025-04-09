@@ -29,9 +29,7 @@ export async function POST(request: Request) {
                 startLocation,
                 endLocation,
                 taxiCalled,
-                taxiArrivalTime: taxiArrivalTime
-                    ? new Date(taxiArrivalTime)
-                    : null,
+                taxiArrivalTime: taxiArrivalTime || "",
                 cost,
                 totalSeats,
                 availableSeats,

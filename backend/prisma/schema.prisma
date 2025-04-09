@@ -29,7 +29,7 @@ model Ride {
   startLocation   String     // Could be an address or place identifier
   endLocation     String     // Same as above
   taxiCalled      Boolean    @default(false)
-  taxiArrivalTime DateTime?  // Nullable if no taxi is called
+  taxiArrivalTime String?  // Nullable if no taxi is called
   cost            Decimal    @db.Decimal(10,2)
   totalSeats      Int
   availableSeats  Int

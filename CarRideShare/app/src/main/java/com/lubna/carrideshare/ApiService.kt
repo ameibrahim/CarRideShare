@@ -10,4 +10,7 @@ interface ApiService {
 
     @POST("login")
     suspend fun loginUser(@Body loginRequest: LoginRequest): Response<LoginResponse>
+
+    @POST("rides")
+    suspend fun createRide(@Body rideRequest: RideRequest): Response<RideResponse>
 }

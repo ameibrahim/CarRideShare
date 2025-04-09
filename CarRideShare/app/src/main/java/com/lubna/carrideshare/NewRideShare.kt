@@ -1,15 +1,20 @@
 package com.lubna.carrideshare
 
+import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,11 +34,13 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.createPolylineAnnotationManager
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.MediaType
+import okhttp3.RequestBody
 import org.json.JSONObject
+import java.util.Calendar
 
 // --- Utility Functions ---
 
@@ -97,8 +104,8 @@ suspend fun fetchRoute(rideFrom: Location, rideTo: Location): List<Point>? {
                     "${rideFrom.lng},${rideFrom.lat};${rideTo.lng},${rideTo.lat}" +
                     "?alternatives=false&geometries=polyline6&steps=false&access_token=$accessToken"
 
-            val client = OkHttpClient()
-            val request = Request.Builder().url(url).build()
+            val client = okhttp3.OkHttpClient()
+            val request = okhttp3.Request.Builder().url(url).build()
             client.newCall(request).execute().use { response ->
                 if (response.isSuccessful) {
                     response.body?.string()?.let { bodyStr ->
@@ -120,6 +127,39 @@ suspend fun fetchRoute(rideFrom: Location, rideTo: Location): List<Point>? {
     }
 }
 
+// --- TimePicker Field Composable ---
+
+@Composable
+fun TimePickerField(
+    timeText: String,
+    onTimeSelected: (String) -> Unit
+) {
+    val context = LocalContext.current
+
+    OutlinedTextField(
+        value = timeText,
+        onValueChange = {},
+        label = { Text("Taxi Arrival Time") },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                val calendar = Calendar.getInstance()
+                val hour = calendar.get(Calendar.HOUR_OF_DAY)
+                val minute = calendar.get(Calendar.MINUTE)
+                TimePickerDialog(
+                    context,
+                    { _, selectedHour, selectedMinute ->
+                        onTimeSelected(String.format("%02d:%02d", selectedHour, selectedMinute))
+                    },
+                    hour,
+                    minute,
+                    true
+                ).show()
+            },
+        readOnly = true
+    )
+}
+
 // --- UI Composables ---
 
 @Composable
@@ -127,7 +167,7 @@ fun YellowBackgroundComposable(content: @Composable () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Yellow)
+            .background(Color.White)
     ) {
         content()
     }
@@ -155,7 +195,7 @@ fun MapboxMap(
         }
     }
 
-    // Remember the annotation managers to ensure we reuse them across updates.
+    // Remember the annotation managers to reuse them across updates.
     val pointAnnotationManager = remember { mapView.annotations.createPointAnnotationManager() }
     val polylineAnnotationManager = remember { mapView.annotations.createPolylineAnnotationManager() }
 
@@ -224,7 +264,10 @@ fun NewRideShareScreen(navController: NavController) {
     var rideToExpanded by remember { mutableStateOf(false) }
     var rideToSelected by remember { mutableStateOf<Location?>(null) }
 
-    var departureTime by remember { mutableStateOf("") }
+    // For Taxi Arrival Time, we use the TimePickerField.
+    var departureTime by remember { mutableStateOf("Select Time") }
+    // Toggle to represent if the taxi is already called.
+    var taxiCalled by remember { mutableStateOf(false) }
     var seatsTotal by remember { mutableStateOf("") }
     var seatsAvailable by remember { mutableStateOf("") }
     var totalPrice by remember { mutableStateOf("") }
@@ -236,12 +279,19 @@ fun NewRideShareScreen(navController: NavController) {
         it.address.contains(rideToText, ignoreCase = true)
     }
 
+    // Placeholder: retrieve the current user's ID from your login/session mechanism.
+    val currentUserId = "user123" // Replace with your actual user's id.
+
+    val coroutineScope = rememberCoroutineScope()
+
     YellowBackgroundComposable {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
+            // Map at the top.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -251,72 +301,84 @@ fun NewRideShareScreen(navController: NavController) {
                     rideFromLocation = rideFromSelected,
                     rideToLocation = rideToSelected
                 )
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(16.dp)
-                ) {
-                    OutlinedTextField(
-                        value = rideFromText,
-                        onValueChange = {
-                            rideFromText = it
-                            rideFromExpanded = true
-                        },
-                        label = { Text("Ride From") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    DropdownMenu(
-                        expanded = rideFromExpanded,
-                        onDismissRequest = { rideFromExpanded = false },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        filteredRideFrom.forEach { location ->
-                            DropdownMenuItem(
-                                onClick = {
-                                    rideFromText = location.address
-                                    rideFromSelected = location
-                                    rideFromExpanded = false
-                                },
-                                text = { Text(text = location.address) }
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = rideToText,
-                        onValueChange = {
-                            rideToText = it
-                            rideToExpanded = true
-                        },
-                        label = { Text("Ride To") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    DropdownMenu(
-                        expanded = rideToExpanded,
-                        onDismissRequest = { rideToExpanded = false },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        filteredRideTo.forEach { location ->
-                            DropdownMenuItem(
-                                onClick = {
-                                    rideToText = location.address
-                                    rideToSelected = location
-                                    rideToExpanded = false
-                                },
-                                text = { Text(text = location.address) }
-                            )
-                        }
-                    }
-                }
             }
             Spacer(modifier = Modifier.height(16.dp))
+            // Ride From Input.
             OutlinedTextField(
-                value = departureTime,
-                onValueChange = { departureTime = it },
-                label = { Text("Departure Time") },
+                value = rideFromText,
+                onValueChange = {
+                    rideFromText = it
+                    rideFromExpanded = true
+                },
+                label = { Text("Ride From") },
                 modifier = Modifier.fillMaxWidth()
             )
+            DropdownMenu(
+                expanded = rideFromExpanded,
+                onDismissRequest = { rideFromExpanded = false },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                filteredRideFrom.forEach { location ->
+                    DropdownMenuItem(
+                        onClick = {
+                            rideFromText = location.address
+                            rideFromSelected = location
+                            rideFromExpanded = false
+                        },
+                        text = { Text(text = location.address) }
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(8.dp))
+            // Ride To Input.
+            OutlinedTextField(
+                value = rideToText,
+                onValueChange = {
+                    rideToText = it
+                    rideToExpanded = true
+                },
+                label = { Text("Ride To") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            DropdownMenu(
+                expanded = rideToExpanded,
+                onDismissRequest = { rideToExpanded = false },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                filteredRideTo.forEach { location ->
+                    DropdownMenuItem(
+                        onClick = {
+                            rideToText = location.address
+                            rideToSelected = location
+                            rideToExpanded = false
+                        },
+                        text = { Text(text = location.address) }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            // TimePicker Field for Taxi Arrival Time.
+            TimePickerField(
+                timeText = departureTime,
+                onTimeSelected = { selectedTime ->
+                    departureTime = selectedTime
+                }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            // Taxi Called Toggle Input.
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Switch(
+                    checked = taxiCalled,
+                    onCheckedChange = { taxiCalled = it }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Taxi Called")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            // Other Inputs.
             OutlinedTextField(
                 value = seatsTotal,
                 onValueChange = { seatsTotal = it },
@@ -336,14 +398,34 @@ fun NewRideShareScreen(navController: NavController) {
             OutlinedTextField(
                 value = totalPrice,
                 onValueChange = { totalPrice = it },
-                label = { Text("Total Price") },
+                label = { Text("Cost") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    // Handle confirmation of the new ride.
+                    // Build the ride request.
+                    val rideRequest = RideRequest(
+                        createdById = currentUserId,
+                        startLocation = rideFromText,
+                        endLocation = rideToText,
+                        taxiCalled = taxiCalled,
+                        taxiArrivalTime = departureTime,
+                        cost = totalPrice,
+                        totalSeats = seatsTotal,
+                        availableSeats = seatsAvailable
+                    )
+                    // Post the ride data using Retrofit.
+                    coroutineScope.launch {
+                        val response = RetrofitInstance.api.createRide(rideRequest)
+                        if (response.isSuccessful) {
+                            println("Ride created successfully!")
+                            // Optionally, navigate or show a success message.
+                        } else {
+                            println("Error creating ride: ${response.errorBody()?.string()}")
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
