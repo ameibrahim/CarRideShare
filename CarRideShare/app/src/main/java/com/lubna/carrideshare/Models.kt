@@ -1,5 +1,7 @@
 package com.lubna.carrideshare
 
+import java.math.BigDecimal
+
 data class User(val email: String, val fullName: String, val phoneNumber: String, val password: String)
 data class UserResponse(val message: String) // Adjust based on the API response
 
@@ -12,9 +14,9 @@ data class RideRequest(
     val endLocation: String,
     val taxiCalled: Boolean,
     val taxiArrivalTime: String,
-    val cost: String,
-    val totalSeats: String,
-    val availableSeats: String
+    val cost: BigDecimal,
+    val totalSeats: Int,
+    val availableSeats: Int
 )
 
 data class RideResponse(

@@ -169,7 +169,7 @@ fun SignupScreen(navController: NavController){
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(context, "Signup successful", Toast.LENGTH_SHORT).show()
                                 // Optionally, navigate to login screen:
-                                // navController.navigate("loginscreen")
+                                 navController.navigate("loginscreen")
                             }
                         } else {
                             withContext(Dispatchers.Main) {

@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.google.gson.Gson
 import com.mapbox.geojson.Point
 import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.MapView
@@ -40,6 +41,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import org.json.JSONObject
+import java.math.BigDecimal
 import java.util.Calendar
 
 // --- Utility Functions ---
@@ -279,8 +281,18 @@ fun NewRideShareScreen(navController: NavController) {
         it.address.contains(rideToText, ignoreCase = true)
     }
 
-    // Placeholder: retrieve the current user's ID from your login/session mechanism.
-    val currentUserId = "user123" // Replace with your actual user's id.
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+
+    // Retrieve the user data JSON from SharedPreferences and parse it
+    val userDataJson = sharedPref.getString("userData", null)
+    val currentUserId = if (userDataJson != null) {
+        val gson = Gson()
+        val user = gson.fromJson(userDataJson, LoginResponse::class.java)
+        user.id
+    } else {
+        ""
+    }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -406,15 +418,21 @@ fun NewRideShareScreen(navController: NavController) {
             Button(
                 onClick = {
                     // Build the ride request.
+                    val costValue = totalPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val totalSeatsValue = seatsTotal.toIntOrNull() ?: 0
+                    val availableSeatsValue = seatsAvailable.toIntOrNull() ?: 0
+                    // Only provide taxiArrivalTime if taxi is called and time is set.
+                    val taxiArrivalValue = if (taxiCalled && departureTime != "Select Time") departureTime else ""
+
                     val rideRequest = RideRequest(
                         createdById = currentUserId,
                         startLocation = rideFromText,
                         endLocation = rideToText,
                         taxiCalled = taxiCalled,
-                        taxiArrivalTime = departureTime,
-                        cost = totalPrice,
-                        totalSeats = seatsTotal,
-                        availableSeats = seatsAvailable
+                        taxiArrivalTime = taxiArrivalValue,
+                        cost = costValue,
+                        totalSeats = totalSeatsValue,
+                        availableSeats = availableSeatsValue
                     )
                     // Post the ride data using Retrofit.
                     coroutineScope.launch {
