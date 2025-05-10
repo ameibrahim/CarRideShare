@@ -43,6 +43,12 @@ fun Dashboard(navController: NavController) {
         }
 
         Button(onClick = {
+            navController.navigate("searchRides")
+        }){
+            Text("Search")
+        }
+
+        Button(onClick = {
             navController.navigate("settings")
         }){
             Image(
