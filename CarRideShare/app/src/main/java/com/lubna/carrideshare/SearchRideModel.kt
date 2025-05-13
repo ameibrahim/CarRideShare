@@ -20,7 +20,7 @@ class SearchRidesViewModelFactory(
     }
 }
 
-// --- Repository stays the same ---
+
 class SearchRidesRepository(private val api: ApiService) {
     suspend fun fetchRides(): List<RideResponse> {
         val resp = api.getRides()
@@ -36,15 +36,12 @@ class SearchRidesViewModel(
     private val repo: SearchRidesRepository
 ) : ViewModel() {
 
-    // 1) All rides from the network
     private val _allRides = MutableStateFlow<List<RideResponse>>(emptyList())
     val allRides: StateFlow<List<RideResponse>> = _allRides.asStateFlow()
 
-    // 2) Current search query
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    // 3) Combined & filtered list
     val filteredRides: StateFlow<List<RideResponse>> =
         combine(_allRides, _searchQuery) { rides, query ->
             if (query.isBlank()) rides

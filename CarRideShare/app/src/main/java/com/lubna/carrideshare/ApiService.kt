@@ -17,5 +17,8 @@ interface ApiService {
 
     @GET("rides")
     suspend fun getRides(): Response<List<RideResponse>>
+
+    @GET("bookings")
+    suspend fun getBookings(): Response<List<BookingResponse>>
 }
 

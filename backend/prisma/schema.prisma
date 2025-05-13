@@ -25,6 +25,7 @@ model User {
 model Ride {
   id              String     @id @default(uuid())
   createdBy       User       @relation("CreatedRides", fields: [createdById], references: [id])
+  name String
   createdById     String
   startLocation   String     // Could be an address or place identifier
   endLocation     String     // Same as above
@@ -53,12 +54,4 @@ enum RideStatus {
   SCHEDULED
   ONGOING
   ENDED
-}
-
-model FAQ {
-  id        String   @id @default(uuid())
-  question  String
-  answer    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }

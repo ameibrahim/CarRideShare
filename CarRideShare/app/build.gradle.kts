@@ -74,7 +74,7 @@ dependencies {
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.coroutines.android)
     implementation(libs.osmdroid)
-    implementation(libs.mapbox)
+//    implementation(libs.mapbox)
     implementation(libs.okhttp)
     implementation(libs.json)
 }

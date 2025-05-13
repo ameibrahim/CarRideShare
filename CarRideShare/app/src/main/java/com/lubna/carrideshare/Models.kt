@@ -33,3 +33,8 @@ data class RideResponse(
     val createdAt: String,
     val updatedAt: String
 )
+
+data class BookingResponse (
+    val id: String,
+    val status: String,
+)

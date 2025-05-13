@@ -203,6 +203,7 @@ fun SignupScreen(navController: NavController){
             disabledContainerColor = Color.Transparent,
             disabledContentColor = Color.Transparent
         )
+
         ) {
             Row {
                 Text(text = "Have an account?", fontSize = 18.sp, color = Color.White)

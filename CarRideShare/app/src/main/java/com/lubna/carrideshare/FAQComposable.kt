@@ -33,7 +33,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 // Modifiers & utilities
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 // 1. Your data model
 data class FAQItem(
@@ -52,7 +54,12 @@ fun FAQSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("FAQs")
+            Text(
+                text = "Frequently Asked Questions",
+                fontSize = 20.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                color = Color.White
+            )
         }
 
         Spacer(Modifier.height(8.dp))
@@ -101,5 +108,3 @@ fun FAQItemCard(
         }
     }
 }
-
-// New Composable - 1

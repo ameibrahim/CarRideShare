@@ -29,7 +29,8 @@ COPY --from=builder /app/prisma ./prisma
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-# Expose the port your app listens on
+# Expose the port your app listens on to bind on crsapi.whichmacfor.me/api
+
 EXPOSE 3000
 
 # Set the entrypoint to run migrations then start the app

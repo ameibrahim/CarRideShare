@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.gson.Gson
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 @Composable
 fun SettingsScreen(navController: NavController) {
@@ -38,54 +39,60 @@ fun SettingsScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(20.dp)
         ) {
+            Spacer(modifier = Modifier.height(40.dp))
+
             Text(
                 text = "Settings",
-                fontSize = 30.sp,
+                fontSize = 40.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = Color.White
             )
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = "User Email: $userEmail",
-                fontSize = 20.sp,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(40.dp))
-            Button(
-                onClick = {
-                    // Clear login state and user data
-                    sharedPref.edit().clear().apply()
-                    // Navigate back to the landing screen
-                    navController.navigate("landing") {
-                        popUpTo("landing") { inclusive = true }
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(Color.White),
-                shape = RoundedCornerShape(40.dp),
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .height(70.dp)
 
-            ) {
-                Text(text = "Log Out", fontSize = 18.sp, color = Color.Black)
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Spacer(modifier = Modifier.height(40.dp))
+
+                Text(
+                    text = userEmail,
+                    fontSize = 20.sp,
+                    color = Color.White
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(
+                    onClick = {
+                        // Clear login state and user data
+                        sharedPref.edit().clear().apply()
+                        // Navigate back to the landing screen
+                        navController.navigate("landing") {
+                            popUpTo("landing") { inclusive = true }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(Color.Black),
+                    shape = RoundedCornerShape(40.dp),
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .height(60.dp)
+
+                ) {
+                    Text(text = "Log Out", fontSize = 18.sp, color = Color.White)
+                }
             }
-        }
 
-        val faqList = remember {
-            mutableStateListOf(
-                FAQItem("What is RideShare?", "RideShare connects drivers and riders in real time."),
-                FAQItem("How do I reset my password?", "Tap “Forgot password” on the login screen."),
-                // …add/edit here!
-            )
-        }
+            val faqList = remember {
+                mutableStateListOf(
+                    FAQItem("What is RideShare?", "RideShare connects users that are going to the same location together so that they can split the cost of the ride."),
+                    FAQItem("How many people can I share a ride with?", "Because the are only for 4 empty spots in a car and 2 are for the driver and you. You can have a maximum of 3 free slots to share a ride with."),
+                    FAQItem("How do I begin creating a ride share?", "To begin creating a ride share, on your dashboard, click the new ride share button and complete the missing fields. Once it has been created, wait if anyone wants to join and start your trip."),
+                    FAQItem("I cannot see a place to add my card for payment", "At the moment we do not accept in payment methods, you will have to pay the driver with cash. Future updates will connect you to the driver so that they get their payment automatically."),
+                    FAQItem("Can I cancel a ride share?", "Yes, you can cancel a ride share by simply deleting it if you are the owner or opting out if you said yes to one. This will remove you from the current booking.")
 
-        Column(Modifier.fillMaxSize().padding(16.dp)) {
-            Text("Settings")
-            Spacer(Modifier.height(16.dp))
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
 
             FAQSection(
                 faqs = faqList
