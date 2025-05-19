@@ -88,7 +88,6 @@ fun SettingsScreen(navController: NavController) {
                     FAQItem("How do I begin creating a ride share?", "To begin creating a ride share, on your dashboard, click the new ride share button and complete the missing fields. Once it has been created, wait if anyone wants to join and start your trip."),
                     FAQItem("I cannot see a place to add my card for payment", "At the moment we do not accept in payment methods, you will have to pay the driver with cash. Future updates will connect you to the driver so that they get their payment automatically."),
                     FAQItem("Can I cancel a ride share?", "Yes, you can cancel a ride share by simply deleting it if you are the owner or opting out if you said yes to one. This will remove you from the current booking.")
-
                 )
             }
 

@@ -22,6 +22,7 @@ export async function POST(request: Request) {
         availableSeats,
         status,
     } = body;
+    
     try {
         const ride = await prisma.ride.create({
             data: {

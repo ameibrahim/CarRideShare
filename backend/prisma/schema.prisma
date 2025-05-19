@@ -3,7 +3,6 @@ generator client {
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
 }
 
-
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
@@ -25,13 +24,13 @@ model User {
 model Ride {
   id              String     @id @default(uuid())
   createdBy       User       @relation("CreatedRides", fields: [createdById], references: [id])
-  name String
+  name            String     @default("")
   createdById     String
-  startLocation   String     // Could be an address or place identifier
-  endLocation     String     // Same as above
+  startLocation   String // Could be an address or place identifier
+  endLocation     String // Same as above
   taxiCalled      Boolean    @default(false)
-  taxiArrivalTime String?  // Nullable if no taxi is called
-  cost            Decimal    @db.Decimal(10,2)
+  taxiArrivalTime String? // Nullable if no taxi is called
+  cost            Decimal    @db.Decimal(10, 2)
   totalSeats      Int
   availableSeats  Int
   status          RideStatus @default(SCHEDULED)
@@ -41,13 +40,13 @@ model Ride {
 }
 
 model Booking {
-  id              String   @id @default(uuid())
-  ride            Ride     @relation(fields: [rideId], references: [id])
-  rideId          String
-  user            User     @relation(fields: [userId], references: [id])
-  userId          String
-  costPerPassenger Decimal @db.Decimal(10,2)
-  createdAt       DateTime @default(now())
+  id               String   @id @default(uuid())
+  ride             Ride     @relation(fields: [rideId], references: [id])
+  rideId           String
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+  costPerPassenger Decimal  @db.Decimal(10, 2)
+  createdAt        DateTime @default(now())
 }
 
 enum RideStatus {
