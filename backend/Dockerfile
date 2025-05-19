@@ -27,7 +27,8 @@ COPY --from=builder /app/prisma ./prisma
 
 # Copy the entrypoint script and make it executable
 COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+COPY wait-for.sh ./
+RUN chmod +x /app/entrypoint.sh /app/wait-for.sh
 
 # Expose the port your app listens on to bind on crsapi.whichmacfor.me/api
 
