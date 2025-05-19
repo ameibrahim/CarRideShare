@@ -9,10 +9,10 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
-    
+
     try {
         const rides = await prisma.ride.findMany({
-            where: { id },
+            where: { createdById: id },
             orderBy: { createdAt: "desc" },
         });
         return NextResponse.json({ rides });

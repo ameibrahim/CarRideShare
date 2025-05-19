@@ -10,7 +10,30 @@ export async function GET(
 ) {
     const { id } = await params;
 
-    const ride = await prisma.ride.findUnique({ where: { id } });
+    // Include the createdBy field with only fullName and email,
+    // and include all bookings with their booking user's fullName and email
+    const ride = await prisma.ride.findUnique({
+        where: { id },
+        include: {
+            createdBy: {
+                select: {
+                    fullName: true,
+                    email: true,
+                },
+            },
+            bookings: {
+                include: {
+                    user: {
+                        select: {
+                            fullName: true,
+                            email: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+
     if (!ride) {
         return NextResponse.json({ error: "Ride not found" }, { status: 404 });
     }

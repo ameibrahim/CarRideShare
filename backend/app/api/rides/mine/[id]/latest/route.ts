@@ -12,7 +12,7 @@ export async function GET(
     
     try {
         const rides = await prisma.ride.findMany({
-            where: { id },
+            where: { createdById: id },
             orderBy: { createdAt: "desc" },
             take: 3,
         });
