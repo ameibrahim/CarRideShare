@@ -1,9 +1,11 @@
 package com.lubna.carrideshare
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +43,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigator(factory: ViewModelProvider.Factory) {
     val navController = rememberNavController()
@@ -61,12 +64,13 @@ fun AppNavigator(factory: ViewModelProvider.Factory) {
             arguments = listOf(navArgument("rideId") { type = NavType.StringType })
         ) { backStack ->
             val rideId = backStack.arguments!!.getString("rideId")!!
-            RideDetailsScreen(rideId)
+            RideDetailsScreen(rideId, navController)
         }
     }
 }
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

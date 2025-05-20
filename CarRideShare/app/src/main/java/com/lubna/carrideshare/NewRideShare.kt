@@ -74,9 +74,14 @@ fun YellowBackgroundComposable(content: @Composable () -> Unit) {
 
 @Composable
 fun NewRideShareScreen(navController: NavController) {
+
     var rideFromText by remember { mutableStateOf("") }
     var rideToText by remember { mutableStateOf("") }
-    
+    var rideName by remember { mutableStateOf("") }
+
+    // Track if rideName is manually edited
+    var isRideNameEdited by remember { mutableStateOf(false) }
+
     var departureTime by remember { mutableStateOf("Select Time") }
     var taxiCalled by remember { mutableStateOf(false) }
     var seatsTotal by remember { mutableStateOf("") }
@@ -92,10 +97,26 @@ fun NewRideShareScreen(navController: NavController) {
         val user = gson.fromJson(userDataJson, LoginResponse::class.java)
         user.id
     } else {
+        "someone"
+    }
+
+    val currentUserName = if (userDataJson != null) {
+        val gson = Gson()
+        val user = gson.fromJson(userDataJson, LoginResponse::class.java)
+        user.fullName
+    } else {
         ""
     }
 
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(rideToText) {
+        if (!isRideNameEdited && rideToText.isNotBlank()) {
+            val firstName = currentUserName.split(" ").firstOrNull() ?: ""
+            val pascalFirstName = firstName.lowercase().replaceFirstChar { it.uppercase() }
+            rideName = "Ride With $pascalFirstName to $rideToText"
+        }
+    }
 
     YellowBackgroundComposable {
         Column(
@@ -136,6 +157,17 @@ fun NewRideShareScreen(navController: NavController) {
                 colors = TextFieldDefaults.colors(Color.White),
                 shape = RoundedCornerShape(50.dp)
             )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = rideName,
+                onValueChange = { rideName = it },
+                label = { Text("Ride Name") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.colors(Color.White),
+                shape = RoundedCornerShape(50.dp)
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             TimePickerField(
@@ -205,12 +237,15 @@ fun NewRideShareScreen(navController: NavController) {
                         taxiArrivalTime = taxiArrivalValue,
                         cost = costValue,
                         totalSeats = totalSeatsValue,
-                        availableSeats = availableSeatsValue
+                        availableSeats = availableSeatsValue,
+                        name = rideName,
                     )
+
                     coroutineScope.launch {
                         val response = RetrofitInstance.api.createRide(rideRequest)
                         if (response.isSuccessful) {
                             println("Ride created successfully!")
+                            navController.navigate("loginscreen")
                         } else {
                             println("Error creating ride: ${response.errorBody()?.string()}")
                         }

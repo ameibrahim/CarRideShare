@@ -1,21 +1,91 @@
 package com.lubna.carrideshare
 
+import android.content.Context
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import com.google.gson.Gson
+import kotlinx.coroutines.time.delay
+import java.time.Duration
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Dashboard(navController: NavController) {
+
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+
+    var rideItems by remember { mutableStateOf<List<RideItem>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    var myRideItems by remember { mutableStateOf<List<RideItem>>(emptyList()) }
+    var isMineLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            try {
+                // Fetch latest rides
+                val response = RetrofitInstance.api.getLatestRides()
+                if (response.isSuccessful) {
+                    response.body()?.let { ridesResponse ->
+                        rideItems = ridesResponse.rides
+                    }
+                } else {
+                    println("Error: ${response.code()} - ${response.message()}")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                isLoading = false
+            }
+
+            try {
+                // Fetch my latest rides
+                val userDataJson = sharedPref.getString("userData", null)
+                val userId = if (userDataJson != null) {
+                    val gson = Gson()
+                    val user = gson.fromJson(userDataJson, LoginResponse::class.java)
+                    user.id
+                } else {
+                    ""
+                }
+
+                if (userId.isNotEmpty()) {
+                    val response = RetrofitInstance.api.getMyLatestRides(userId = userId)
+                    if (response.isSuccessful) {
+                        response.body()?.let { ridesResponse ->
+                            myRideItems = ridesResponse.rides
+                        }
+                    } else {
+                        println("Error: ${response.code()} - ${response.message()}")
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                isMineLoading = false
+            }
+
+            delay(Duration.ofSeconds(10)) // wait 10 seconds before next fetch
+        }
+    }
 
     Box {
         YellowBackground()
@@ -70,25 +140,35 @@ fun Dashboard(navController: NavController) {
 
         Spacer(Modifier.height(10.dp))
 
-
-        Column(verticalArrangement = Arrangement.spacedBy((-10).dp)) {
-            RideShareItem(
-                rideName = "Carpool to Campus With Lubna",
-                departureTime = "08:30 AM",
-                onClick = { /* handle click navigation or action */ }
-            )
-
-            RideShareItem(
-                rideName = "Ride Share To Town With Ahmed",
-                departureTime = "10:30 AM",
-                onClick = { /* handle click navigation or action */ }
-            )
-
-            RideShareItem(
-                rideName = "Go to Beach With Hussein",
-                departureTime = "4:30 PM",
-                onClick = { /* handle click navigation or action */ }
-            )
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        } else {
+            if (rideItems.isEmpty()) {
+                Text(
+                    text = "There are no new rides",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp),
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy((-10).dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(rideItems) { ride ->
+                        RideShareItem(
+                            rideName = ride.name,
+                            departureTime = ride.taxiArrivalTime,
+                            onClick = {
+                                navController.navigate("rideDetails/${ride.id}")
+                            }
+                        )
+                    }
+                }
+            }
         }
 
         Spacer(Modifier.height(20.dp))
@@ -115,24 +195,35 @@ fun Dashboard(navController: NavController) {
 
         Spacer(Modifier.height(10.dp))
 
-        Column(verticalArrangement = Arrangement.spacedBy((-10).dp)) {
-            RideShareItem(
-                rideName = "Carpool to Campus With Lubna",
-                departureTime = "08:30 AM",
-                onClick = { /* handle click navigation or action */ }
-            )
-
-            RideShareItem(
-                rideName = "Carpool To Bakery With Lubna",
-                departureTime = "9:00 AM",
-                onClick = { /* handle click navigation or action */ }
-            )
-
-            RideShareItem(
-                rideName = "Carpool To Market With Lubna",
-                departureTime = "5:00 PM",
-                onClick = { /* handle click navigation or action */ }
-            )
+        if (isMineLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        } else {
+            if (myRideItems.isEmpty()) {
+                Text(
+                    text = "You have no new rides",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp),
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy((-10).dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(myRideItems) { ride ->
+                        RideShareItem(
+                            rideName = ride.name,
+                            departureTime = ride.taxiArrivalTime,
+                            onClick = {
+                                navController.navigate("rideDetails/${ride.id}")
+                            }
+                        )
+                    }
+                }
+            }
         }
 
     }

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModelProvider
+import android.util.Log
 
 class SearchRidesViewModelFactory(
     private val repo: SearchRidesRepository
@@ -22,48 +23,56 @@ class SearchRidesViewModelFactory(
 
 
 class SearchRidesRepository(private val api: ApiService) {
-    suspend fun fetchRides(): List<RideResponse> {
-        val resp = api.getRides()
+
+    suspend fun searchRides(query: String): List<RideResponse> {
+        val searchRequest = SearchRequest(query)
+        val resp = api.searchRides(searchRequest)
         if (resp.isSuccessful) {
-            return resp.body() ?: emptyList()
+            return resp.body()?.results ?: emptyList()
         }
         throw HttpException(resp)
     }
+
 }
 
-// --- ViewModel with StateFlow-based filtering ---
 class SearchRidesViewModel(
     private val repo: SearchRidesRepository
 ) : ViewModel() {
 
     private val _allRides = MutableStateFlow<List<RideResponse>>(emptyList())
-    val allRides: StateFlow<List<RideResponse>> = _allRides.asStateFlow()
+    val filteredRides: StateFlow<List<RideResponse>> = _allRides.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    val filteredRides: StateFlow<List<RideResponse>> =
-        combine(_allRides, _searchQuery) { rides, query ->
-            if (query.isBlank()) rides
-            else rides.filter { it.id.contains(query, ignoreCase = true) }
-        }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList()
-            )
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     init {
         viewModelScope.launch {
-            try {
-                _allRides.value = repo.fetchRides()
-            } catch (e: Exception) {
-                // TODO: handle error
-            }
+            _searchQuery
+                .debounce(300)
+                .distinctUntilChanged()
+                .collect { query ->
+                    try {
+                        val results = if (query.isBlank()) {
+                            emptyList()
+                        } else {
+                            repo.searchRides(query)
+                        }
+                        Log.d("SearchRidesViewModel", "Search query: $query, results count: ${results.size}")
+                        _allRides.value = results
+                    } catch (e: Exception) {
+                        Log.e("SearchRidesViewModel", "Error searching rides", e)
+                        _allRides.value = emptyList()
+                    }
+                }
         }
     }
 
-    // Called from your TextField’s onValueChange
     fun onSearchQueryChange(q: String) {
         _searchQuery.value = q
     }
