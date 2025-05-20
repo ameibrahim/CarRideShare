@@ -245,7 +245,7 @@ fun NewRideShareScreen(navController: NavController) {
                         val response = RetrofitInstance.api.createRide(rideRequest)
                         if (response.isSuccessful) {
                             println("Ride created successfully!")
-                            navController.navigate("loginscreen")
+                            navController.navigate("dashboard")
                         } else {
                             println("Error creating ride: ${response.errorBody()?.string()}")
                         }

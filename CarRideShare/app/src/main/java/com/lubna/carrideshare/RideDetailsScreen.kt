@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.rememberCoroutineScope
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
@@ -402,7 +403,7 @@ fun RideDetailsScreen(rideId: String, navController: NavController) {
                                 modifier = Modifier
                                     .padding(top = 4.dp)
                                     .height(40.dp)
-                                    .width(220.dp)
+                                    .wrapContentWidth()
                                     .align(Alignment.CenterHorizontally),
                                 contentAlignment = Alignment.Center
                             ) {
