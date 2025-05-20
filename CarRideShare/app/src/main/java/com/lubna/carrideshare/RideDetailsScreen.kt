@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -141,6 +142,9 @@ fun RideDetailsScreen(rideId: String, navController: NavController) {
 
                         Spacer(modifier = Modifier.height(10.dp))
 
+                        Log.d("DEBUG", "ride.createdById = ${ride.createdById}")
+                        Log.d("DEBUG", "currentUserId = $currentUserId")
+
                         if (ride.createdById == currentUserId) {
                             if (ride.status == "SCHEDULED") {
                                 Button(
@@ -224,101 +228,103 @@ fun RideDetailsScreen(rideId: String, navController: NavController) {
                                 }
                             }
                         } else {
-                            val hasBooking = ride.bookings.any { it.userId == currentUserId }
+                            if(ride.status == "SCHEDULED"){
+                                val hasBooking = ride.bookings.any { it.userId == currentUserId }
 
-                            when {
-                                hasBooking -> {
-                                    Button(
-                                        onClick = {
-                                            scope.launch {
-                                                try {
-                                                    val myBooking =
-                                                        ride.bookings.find { it.userId == currentUserId }
+                                when {
+                                    hasBooking -> {
+                                        Button(
+                                            onClick = {
+                                                scope.launch {
+                                                    try {
+                                                        val myBooking =
+                                                            ride.bookings.find { it.userId == currentUserId }
 
-                                                    val response =
-                                                        RetrofitInstance.api.cancelBooking(
-                                                            bookingId = myBooking?.id
-                                                                ?: return@launch
-                                                        )
-                                                    if (response.isSuccessful) {
-                                                        Toast.makeText(
-                                                            context,
-                                                            "Booking cancelled",
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
-                                                    } else {
-                                                        Toast.makeText(
-                                                            context,
-                                                            "Failed to cancel",
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
-                                                    }
-                                                } catch (e: Exception) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Error: ${e.message}",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                }
-                                            }
-                                        },
-                                        colors = ButtonDefaults.buttonColors(Color.Red),
-                                        shape = RoundedCornerShape(40.dp),
-                                        modifier = Modifier
-                                            .fillMaxWidth(0.5f)
-                                            .height(40.dp)
-                                    ) {
-                                        Text(
-                                            "Cancel Booking",
-                                            fontSize = 13.sp,
-                                            color = Color.White
-                                        )
-                                    }
-                                }
-
-                                ride.availableSeats > 0 -> {
-                                    Button(
-                                        onClick = {
-                                            scope.launch {
-                                                try {
-                                                    val response =
-                                                        RetrofitInstance.api.createBooking(
-                                                            bookingRequest = BookingRequest(
-                                                                rideId = ride.id,
-                                                                userId = currentUserId
-                                                                    ?: return@launch,
-                                                                costPerPassenger = ride.cost // this is a string
+                                                        val response =
+                                                            RetrofitInstance.api.cancelBooking(
+                                                                bookingId = myBooking?.id
+                                                                    ?: return@launch
                                                             )
-                                                        )
-                                                    if (response.isSuccessful) {
+                                                        if (response.isSuccessful) {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Booking cancelled",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        } else {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Failed to cancel",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        }
+                                                    } catch (e: Exception) {
                                                         Toast.makeText(
                                                             context,
-                                                            "Booking created",
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
-                                                    } else {
-                                                        Toast.makeText(
-                                                            context,
-                                                            "Booking failed",
+                                                            "Error: ${e.message}",
                                                             Toast.LENGTH_SHORT
                                                         ).show()
                                                     }
-                                                } catch (e: Exception) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Error: ${e.message}",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
                                                 }
-                                            }
-                                        },
-                                        colors = ButtonDefaults.buttonColors(Color.Green),
-                                        shape = RoundedCornerShape(40.dp),
-                                        modifier = Modifier
-                                            .fillMaxWidth(0.5f)
-                                            .height(40.dp)
-                                    ) {
-                                        Text("Book Ride", fontSize = 13.sp, color = Color.White)
+                                            },
+                                            colors = ButtonDefaults.buttonColors(Color.Red),
+                                            shape = RoundedCornerShape(40.dp),
+                                            modifier = Modifier
+                                                .fillMaxWidth(0.5f)
+                                                .height(40.dp)
+                                        ) {
+                                            Text(
+                                                "Cancel Booking",
+                                                fontSize = 13.sp,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+
+                                    ride.availableSeats > 0 -> {
+                                        Button(
+                                            onClick = {
+                                                scope.launch {
+                                                    try {
+                                                        val response =
+                                                            RetrofitInstance.api.createBooking(
+                                                                bookingRequest = BookingRequest(
+                                                                    rideId = ride.id,
+                                                                    userId = currentUserId
+                                                                        ?: return@launch,
+                                                                    costPerPassenger = ride.cost // this is a string
+                                                                )
+                                                            )
+                                                        if (response.isSuccessful) {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Booking created",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        } else {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Booking failed",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        }
+                                                    } catch (e: Exception) {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Error: ${e.message}",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    }
+                                                }
+                                            },
+                                            colors = ButtonDefaults.buttonColors(Color.Green),
+                                            shape = RoundedCornerShape(40.dp),
+                                            modifier = Modifier
+                                                .fillMaxWidth(0.5f)
+                                                .height(40.dp)
+                                        ) {
+                                            Text("Book Ride", fontSize = 13.sp, color = Color.White)
+                                        }
                                     }
                                 }
                             }
